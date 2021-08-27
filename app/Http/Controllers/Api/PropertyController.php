@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use Illuminate\Http\Request;
 
@@ -14,7 +16,8 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        //
+        $properties = Property::with(['user'])->paginate(20);
+        return PropertyResource::collection($properties);
     }
 
     /**

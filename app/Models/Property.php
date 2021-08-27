@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Property extends Model
 {
     use HasFactory;
+
+    protected $guarded = [];
+
+    /**
+     * Property has one user
+     *
+     */
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
 }
