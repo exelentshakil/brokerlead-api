@@ -1,0 +1,60 @@
+version: '3'
+services:
+  brokerlead-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: brokerlead-api
+    ports:
+      - '8081:8000'
+    volumes:
+      - '.:/var/www/html'
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - brokerlead
+
+  mysql:
+    image: 'mysql:8.0'
+    ports:
+      - '${FORWARD_DB_PORT:-3306}:3306'
+    env_file:
+        - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    volumes:
+      - 'brokerlead_mysql:/var/lib/mysql'
+    networks:
+      - brokerlead
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
+      retries: 3
+      timeout: 5s
+  redis:
+    image: 'redis:alpine'
+    env_file:
+        - .env
+    ports:
+      - '${FORWARD_REDIS_PORT:-6379}:6379'
+    volumes:
+      - 'brokerlead_redis:/data'
+    networks:
+      - brokerlead
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      retries: 3
+      timeout: 5s
+
+networks:
+        brokerlead:
+                driver: bridge
+volumes:
+      brokerlead_mysql:
+                driver: local
+      brokerlead_redis:
+                driver: local
